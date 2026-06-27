@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Academia 2026 · Consulta</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+@font-face{font-family:'system';src:local('-apple-system')}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#FFFBF6;--bg2:#FFF8F2;--bg3:#FDEEDE;
+  --border:#F0D5B8;--border2:#E8C49A;
+  --text:#2C1A08;--text2:#7A4A1E;--text3:#B07840;
+  --orange:#D85A30;--orange-bg:#FAEEDA;--orange-text:#633806;
+  --red-bg:#FCEBEB;--red-text:#A32D2D;
+  --gray-bg:#F1EFE8;--gray-text:#5F5E5A;
+  --radius:14px;--radius-lg:20px;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;overscroll-behavior-y:none}
+body{display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden}
+
+/* ---------- LOGIN ---------- */
+.login{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px;text-align:center}
+.login-badge{width:72px;height:72px;border-radius:50%;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--orange);border:2px solid #FAC775}
+.login h1{font-size:21px;margin:0;font-weight:700}
+.login p{font-size:14px;color:var(--text2);margin:0;max-width:280px;line-height:1.5}
+.gBtn{display:flex;align-items:center;gap:10px;padding:14px 24px;border-radius:var(--radius);border:1px solid var(--border2);background:#fff;cursor:pointer;font-size:15px;font-weight:600;color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,0.07);margin-top:8px}
+.login-tag{font-size:11px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+
+/* ---------- TOP BAR ---------- */
+.topbar{padding:calc(var(--safe-top) + 12px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-badge{width:30px;height:30px;border-radius:50%;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--orange)}
+.brand-name{font-size:15px;font-weight:700}
+.status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#7CB87C}
+.status .dot.spin{background:#EF9F27;animation:pulse 1s infinite}
+.status .dot.err{background:#E24B4A}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.searchbox{position:relative;display:flex;align-items:center;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;gap:10px}
+.searchbox svg{flex-shrink:0;color:var(--text3)}
+.searchbox input{flex:1;border:none;background:none;outline:none;font-size:16px;color:var(--text)}
+.searchbox input::placeholder{color:var(--text3)}
+.searchbox .clear{background:none;border:none;color:var(--text3);font-size:18px;padding:2px 6px;cursor:pointer;line-height:1}
+
+/* ---------- LIST ---------- */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 16px calc(var(--safe-bot) + 16px)}
+.hint{padding:40px 20px;text-align:center;color:var(--text3);font-size:14px;line-height:1.6}
+.hint svg{display:block;margin:0 auto 12px;opacity:.5}
+
+.scard{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;margin-bottom:8px;cursor:pointer;transition:background .15s}
+.scard:active{background:var(--bg2)}
+.scard.baja{opacity:.55}
+.ava{width:42px;height:42px;border-radius:50%;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--orange);flex-shrink:0}
+.scard-info{flex:1;min-width:0}
+.scard-name{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-ellipsis}
+.scard-sub{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-ellipsis}
+.scard-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.b-pago{background:var(--orange-bg);color:var(--orange-text)}
+.b-pend{background:var(--gray-bg);color:var(--gray-text)}
+.b-baja{background:var(--red-bg);color:var(--red-text)}
+.chev{color:var(--text3);flex-shrink:0}
+
+/* ---------- DETAIL SHEET ---------- */
+.sheet-overlay{position:fixed;inset:0;background:rgba(44,26,8,0.35);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet-overlay.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-radius:22px 22px 0 0;z-index:51;max-height:88vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 30px rgba(0,0,0,0.15)}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 4px}
+.sheet-head{padding:8px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:12px}
+.sheet-ava{width:48px;height:48px;border-radius:50%;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--orange);flex-shrink:0}
+.sheet-title{font-size:16.5px;font-weight:700}
+.sheet-meta{font-size:12.5px;color:var(--text2);margin-top:2px}
+.sheet-close{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--bg2);border:none;color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px calc(var(--safe-bot) + 24px)}
+
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.ditem{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.dlbl{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:600;margin-bottom:3px}
+.dval{font-size:13.5px;font-weight:600;color:var(--text)}
+
+.curso-block{margin-bottom:16px}
+.curso-block:last-child{margin-bottom:0}
+.curso-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.curso-title .tag-baja{font-size:10px;font-weight:600;background:var(--red-bg);color:var(--red-text);padding:2px 7px;border-radius:10px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pbox{border-radius:10px;padding:9px 6px;text-align:center;border:1px solid var(--border)}
+.pbox.ok{background:var(--orange-bg);border-color:#FAC775}
+.pbox.dejo{background:var(--gray-bg)}
+.pbox.pend{background:var(--bg2)}
+.pm{font-size:9.5px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-bottom:3px}
+.pv{font-size:12px;font-weight:700}
+.pbox.ok .pv{color:var(--orange-text)}
+.pbox.dejo .pv{color:var(--gray-text);font-size:10.5px}
+.pbox.pend .pv{color:var(--text3)}
+
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<div class="login" id="loginScreen">
+  <div class="login-badge">LA</div>
+  <h1>Academia 2026</h1>
+  <p>Consulta rápida de alumnos, pagos, cursos y horarios.</p>
+  <button class="gBtn" onclick="iniciarLogin()">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Conectar con Google
+  </button>
+  <div class="login-tag" id="loginTag">Solo lectura</div>
+</div>
+
+<div id="appWrap" style="display:none;flex-direction:column;height:100%">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-badge">LA</div>
+        <div class="brand-name">Academia 2026</div>
+      </div>
+      <div class="status"><span class="dot" id="sdot"></span><span id="slbl">Conectado</span></div>
+    </div>
+    <div class="searchbox">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="buscar" placeholder="Buscar alumno..." oninput="renderLista()" autocomplete="off">
+      <button class="clear" id="btnClear" onclick="limpiarBusqueda()" style="display:none">✕</button>
+    </div>
+  </div>
+  <div class="scroll" id="scroll">
+    <div id="lista"></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="overlay" onclick="cerrarDetalle()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-ava" id="dAva"></div>
+    <div style="flex:1;min-width:0">
+      <div class="sheet-title" id="dNombre"></div>
+      <div class="sheet-meta" id="dMeta"></div>
+    </div>
+    <button class="sheet-close" onclick="cerrarDetalle()">✕</button>
+  </div>
+  <div class="sheet-body" id="dBody"></div>
+</div>
+
+<script>
+const CLIENT_ID='273094675027-kiqjh87f4bsnvb6sn7bhs8nfrsa242a9.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
+const CORREO_AUTORIZADO='la.institutodeingles@gmail.com';
+const FILE_NAME='academia_2026_datos.json';
+const MESES=['Matricula','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let alumnos=[],tokenClient,accessToken=null;
+
+function ini(n){const p=n.trim().split(' ');return(p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
+function sdotSet(cl){document.getElementById('sdot').className='dot '+cl;}
+function slblSet(t){document.getElementById('slbl').textContent=t;}
+
+async function validarCuenta(token){
+  try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    return d.email&&d.email.toLowerCase()===CORREO_AUTORIZADO.toLowerCase();
+  }catch(e){return false;}
+}
+
+function rechazarCuenta(){
+  localStorage.removeItem('academia_token');
+  localStorage.removeItem('academia_token_exp');
+  if(accessToken&&window.google?.accounts?.oauth2?.revoke){
+    google.accounts.oauth2.revoke(accessToken,()=>{});
+  }
+  accessToken=null;
+  document.getElementById('appWrap').style.display='none';
+  const ls=document.getElementById('loginScreen');
+  ls.style.display='flex';
+  document.getElementById('loginTag').textContent='Cuenta no autorizada — usá '+CORREO_AUTORIZADO;
+}
+
+function iniciarLogin(){
+  const wait=()=>{
+    if(typeof google==='undefined'){setTimeout(wait,200);return;}
+    tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,scope:SCOPES,
+      callback:async(r)=>{
+        if(r.error)return;
+        const ok=await validarCuenta(r.access_token);
+        if(!ok){rechazarCuenta();return;}
+        accessToken=r.access_token;
+        const exp=Date.now()+((r.expires_in||3500)*1000);
+        localStorage.setItem('academia_token',r.access_token);
+        localStorage.setItem('academia_token_exp',exp);
+        mostrarApp();
+        cargarDrive();
+      }
+    });
+    const savedToken=localStorage.getItem('academia_token');
+    const savedExp=parseInt(localStorage.getItem('academia_token_exp')||'0');
+    if(savedToken&&Date.now()<savedExp-60000){
+      validarCuenta(savedToken).then(ok=>{
+        if(!ok){accessToken=savedToken;rechazarCuenta();return;}
+        accessToken=savedToken;
+        mostrarApp();
+        cargarDrive();
+      });
+    } else {
+      tokenClient.requestAccessToken({prompt:''});
+    }
+  };
+  wait();
+}
+
+function mostrarApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appWrap').style.display='flex';
+}
+
+async function cargarDrive(){
+  sdotSet('spin');slblSet('Cargando...');
+  try{
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&fields=files(id)`,{headers:{Authorization:'Bearer '+accessToken}});
+    const d=await r.json();
+    if(d.files&&d.files.length>0){
+      const fileId=d.files[0].id;
+      const fr=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:'Bearer '+accessToken}});
+      const saved=await fr.json();
+      alumnos=saved.alumnos||[];
+      sdotSet('ok');slblSet(alumnos.length+' alumnos');
+    }else{
+      sdotSet('err');slblSet('Sin datos en Drive');
+    }
+  }catch(e){sdotSet('err');slblSet('Error de conexión');}
+  renderLista();
+}
+
+function limpiarBusqueda(){
+  document.getElementById('buscar').value='';
+  renderLista();
+  document.getElementById('buscar').focus();
+}
+
+function getPagoMesAlumno(a,m){
+  if(a.cursos&&a.cursos.length>0)
+    return a.cursos.reduce((s,c)=>s+(typeof c.pagos[m]==='number'?c.pagos[m]:0),0);
+  return typeof a.pagos?.[m]==='number'?a.pagos[m]:0;
+}
+function mesActualNombre(){
+  const ms=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return ms[new Date().getMonth()];
+}
+
+function renderLista(){
+  const q=(document.getElementById('buscar').value||'').toLowerCase().trim();
+  document.getElementById('btnClear').style.display=q?'block':'none';
+  const lista=document.getElementById('lista');
+  if(!q){
+    lista.innerHTML=`<div class="hint">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Buscá un alumno por nombre para ver su curso, profesor, horario y pagos.
+    </div>`;
+    return;
+  }
+  const mesAct=mesActualNombre();
+  const res=alumnos.filter(a=>a.nombre.toLowerCase().includes(q));
+  if(res.length===0){
+    lista.innerHTML=`<div class="hint">No se encontró ningún alumno con ese nombre.</div>`;
+    return;
+  }
+  lista.innerHTML=res.map(a=>{
+    const grupos=a.cursos&&a.cursos.length>0?a.cursos.map(c=>c.grupo).join(' + '):(a.grupo||'—');
+    const pagoMes=getPagoMesAlumno(a,mesAct);
+    let badge,badgeCls;
+    if(a.baja){badge='Baja';badgeCls='b-baja';}
+    else if(pagoMes>0){badge='Pagó '+mesAct;badgeCls='b-pago';}
+    else{badge='Sin pago';badgeCls='b-pend';}
+    return `<div class="scard ${a.baja?'baja':''}" onclick="abrirDetalle(${a.id})">
+      <div class="ava">${ini(a.nombre)}</div>
+      <div class="scard-info">
+        <div class="scard-name">${a.nombre}</div>
+        <div class="scard-sub">${grupos} · ${a.profe||''}</div>
+      </div>
+      <div class="scard-badge ${badgeCls}">${badge}</div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function pagoBox(m,v){
+  let cls,disp;
+  if(typeof v==='number'){cls='ok';disp='$'+v.toLocaleString('es-AR');}
+  else if(v==='Dejo'){cls='dejo';disp='Dejó';}
+  else{cls='pend';disp='—';}
+  return `<div class="pbox ${cls}"><div class="pm">${m==='Matricula'?'Matrí.':m.slice(0,3)}</div><div class="pv">${disp}</div></div>`;
+}
+
+function abrirDetalle(id){
+  const a=alumnos.find(x=>x.id===id);
+  if(!a)return;
+  document.getElementById('dAva').textContent=ini(a.nombre);
+  document.getElementById('dNombre').textContent=a.nombre;
+  document.getElementById('dMeta').textContent=(a.edad?a.edad+' años · ':'')+(a.baja?'Baja':'Activo');
+
+  const infoGrid=`<div class="dgrid">
+    <div class="ditem"><div class="dlbl">Teléfono</div><div class="dval">${a.tel||'—'}</div></div>
+    <div class="ditem"><div class="dlbl">Matrícula</div><div class="dval">${a.matricula==='P'?'Pagó':'—'}</div></div>
+  </div>`;
+
+  let cursosHtml='';
+  if(a.cursos&&a.cursos.length>0){
+    cursosHtml=a.cursos.map(cur=>`
+      <div class="curso-block">
+        <div class="curso-title">${cur.grupo} · ${cur.profe||''} ${cur.baja?'<span class="tag-baja">Baja</span>':''}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${cur.horario||''}</div>
+        <div class="pgrid">${MESES.map(m=>pagoBox(m,cur.pagos?.[m])).join('')}</div>
+      </div>`).join('');
+  }else{
+    cursosHtml=`
+      <div class="curso-block">
+        <div class="curso-title">${a.grupo||'—'} · ${a.profe||''}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${a.horario||''}</div>
+        <div class="pgrid">${MESES.map(m=>pagoBox(m,a.pagos?.[m])).join('')}</div>
+      </div>`;
+  }
+
+  document.getElementById('dBody').innerHTML=infoGrid+cursosHtml;
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+
+function cerrarDetalle(){
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+</script>
+</body>
+</html>
