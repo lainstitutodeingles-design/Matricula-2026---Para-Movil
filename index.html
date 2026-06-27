@@ -151,7 +151,7 @@ body{display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden
 <script>
 const CLIENT_ID='273094675027-kiqjh87f4bsnvb6sn7bhs8nfrsa242a9.apps.googleusercontent.com';
 const SCOPES='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
-const CORREO_AUTORIZADO='la.institutodeingles@gmail.com';
+const CORREOS_AUTORIZADOS=['la.institutodeingles@gmail.com','alegalvez@gmail.com'];
 const FILE_NAME='academia_2026_datos.json';
 const MESES=['Matricula','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -165,7 +165,7 @@ async function validarCuenta(token){
   try{
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+token}});
     const d=await r.json();
-    return d.email&&d.email.toLowerCase()===CORREO_AUTORIZADO.toLowerCase();
+    return d.email&&CORREOS_AUTORIZADOS.some(c=>c.toLowerCase()===d.email.toLowerCase());
   }catch(e){return false;}
 }
 
@@ -179,7 +179,7 @@ function rechazarCuenta(){
   document.getElementById('appWrap').style.display='none';
   const ls=document.getElementById('loginScreen');
   ls.style.display='flex';
-  document.getElementById('loginTag').textContent='Cuenta no autorizada — usá '+CORREO_AUTORIZADO;
+  document.getElementById('loginTag').textContent='Cuenta no autorizada para esta app';
 }
 
 function iniciarLogin(){
