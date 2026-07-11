@@ -308,6 +308,7 @@ function abrirDetalle(id){
   const infoGrid=`<div class="dgrid">
     <div class="ditem"><div class="dlbl">Teléfono</div><div class="dval">${a.tel||'—'}</div></div>
     <div class="ditem"><div class="dlbl">Matrícula</div><div class="dval">${a.matricula==='P'?'Pagó':'—'}</div></div>
+    <div class="ditem"><div class="dlbl">Cuota</div><div class="dval">${a.cuota?'$'+Number(a.cuota).toLocaleString('es-AR'):'—'}</div></div>
   </div>`;
 
   let cursosHtml='';
