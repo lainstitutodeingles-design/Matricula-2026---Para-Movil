@@ -128,6 +128,9 @@ body{display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden
       <input type="text" id="buscar" placeholder="Buscar alumno..." oninput="renderLista()" autocomplete="off">
       <button class="clear" id="btnClear" onclick="limpiarBusqueda()" style="display:none">✕</button>
     </div>
+    <select id="fGrupoMovil" onchange="renderLista()" style="margin-top:8px;width:100%;font-size:15px;padding:11px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23B07840%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>');background-repeat:no-repeat;background-position:right 12px center">
+      <option value="">— Todos los grupos —</option>
+    </select>
   </div>
   <div class="scroll" id="scroll">
     <div id="lista"></div>
@@ -231,6 +234,7 @@ async function cargarDrive(){
       const saved=await fr.json();
       alumnos=saved.alumnos||[];
       sdotSet('ok');slblSet(alumnos.length+' alumnos');
+      poblarGrupos();
     }else{
       sdotSet('err');slblSet('Sin datos en Drive');
     }
@@ -254,25 +258,59 @@ function mesActualNombre(){
   return ms[new Date().getMonth()];
 }
 
+function poblarGrupos(){
+  const sel=document.getElementById('fGrupoMovil');
+  if(!sel)return;
+  const activos=alumnos.filter(a=>!a.baja);
+  const grupos=[...new Set(activos.map(a=>a.grupo).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  sel.innerHTML='<option value="">— Todos los grupos —</option>'+grupos.map(g=>`<option>${g}</option>`).join('');
+}
+
 function renderLista(){
   const q=(document.getElementById('buscar').value||'').toLowerCase().trim();
+  const grupo=document.getElementById('fGrupoMovil')?.value||'';
   document.getElementById('btnClear').style.display=q?'block':'none';
   const lista=document.getElementById('lista');
+  const mesAct=mesActualNombre();
+
+  // Si hay grupo seleccionado, mostrar todos los activos de ese grupo
+  if(grupo){
+    const res=alumnos.filter(a=>!a.baja&&a.grupo===grupo&&(!q||a.nombre.toLowerCase().includes(q)));
+    if(res.length===0){
+      lista.innerHTML=`<div class="hint">No hay alumnos activos en este grupo.</div>`;
+      return;
+    }
+    lista.innerHTML=res.map(a=>{
+      const pagoMes=getPagoMesAlumno(a,mesAct);
+      const badge=pagoMes>0?'Pagó '+mesAct:'Sin pago';
+      const badgeCls=pagoMes>0?'b-pago':'b-pend';
+      return `<div class="scard" onclick="abrirDetalle(${a.id})">
+        <div class="ava">${ini(a.nombre)}</div>
+        <div class="scard-info">
+          <div class="scard-name">${a.nombre}</div>
+          <div class="scard-sub">${a.grupo||'—'} · ${a.profe||''}</div>
+        </div>
+        <div class="scard-badge ${badgeCls}">${badge}</div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // Sin grupo: comportamiento original por búsqueda
   if(!q){
     lista.innerHTML=`<div class="hint">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      Buscá un alumno por nombre para ver su curso, profesor, horario y pagos.
+      Buscá un alumno por nombre, o elegí un grupo arriba.
     </div>`;
     return;
   }
-  const mesAct=mesActualNombre();
   const res=alumnos.filter(a=>a.nombre.toLowerCase().includes(q));
   if(res.length===0){
     lista.innerHTML=`<div class="hint">No se encontró ningún alumno con ese nombre.</div>`;
     return;
   }
   lista.innerHTML=res.map(a=>{
-    const grupos=a.cursos&&a.cursos.length>0?a.cursos.map(c=>c.grupo).join(' + '):(a.grupo||'—');
     const pagoMes=getPagoMesAlumno(a,mesAct);
     let badge,badgeCls;
     if(a.baja){badge='Baja';badgeCls='b-baja';}
@@ -282,7 +320,7 @@ function renderLista(){
       <div class="ava">${ini(a.nombre)}</div>
       <div class="scard-info">
         <div class="scard-name">${a.nombre}</div>
-        <div class="scard-sub">${grupos} · ${a.profe||''}</div>
+        <div class="scard-sub">${a.grupo||'—'} · ${a.profe||''}</div>
       </div>
       <div class="scard-badge ${badgeCls}">${badge}</div>
       <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
