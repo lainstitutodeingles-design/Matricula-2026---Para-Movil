@@ -367,7 +367,7 @@ function abrirRecibo(){
       <div style="width:60px;height:60px;flex-shrink:0"><img src="${LOGO}" style="width:60px;height:60px;border-radius:50%;object-fit:cover"></div>
       <div style="text-align:center">
         <div style="font-size:18px;font-weight:bold;letter-spacing:1px">RECIBO</div>
-        <div style="font-size:13px;font-weight:bold">N&deg; ${String(reciboNum).padStart(4,'0')}</div>
+        <div style="font-size:13px;font-weight:bold;display:flex;align-items:center;gap:4px">N&deg; <span id="reciboNumDisplay">${String(reciboNum).padStart(4,'0')}</span><button onclick="editarNumRecibo()" style="background:none;border:none;font-size:11px;cursor:pointer;color:#888;padding:0;line-height:1">&#9998;</button></div>
         <div style="margin-top:6px"><div style="font-size:10px;color:#555;margin-bottom:2px">Fecha</div>
         <div style="display:flex;gap:3px">
           <div style="border:1.5px solid #333;padding:3px 7px;text-align:center;font-size:12px;font-weight:bold;border-radius:3px">${dia}</div>
@@ -390,6 +390,16 @@ function abrirRecibo(){
       </div>
     </div>`;
   document.getElementById('reciboSheet').classList.add('on');
+}
+function editarNumRecibo(){
+  const nuevo=prompt('Número de recibo:',reciboNum);
+  if(nuevo===null)return;
+  const n=parseInt(nuevo);
+  if(isNaN(n)||n<1){alert('Número inválido');return;}
+  reciboNum=n;
+  localStorage.setItem('academia_movil_recibo',reciboNum);
+  const el=document.getElementById('reciboNumDisplay');
+  if(el)el.textContent=String(reciboNum).padStart(4,'0');
 }
 function cerrarRecibo(){document.getElementById('reciboSheet').classList.remove('on');}
 async function descargarRecibo(){
