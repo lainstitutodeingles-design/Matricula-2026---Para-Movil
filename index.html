@@ -177,7 +177,7 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJT
 
 let alumnos=[],tokenClient,accessToken=null,driveFileId=null,nextId=1,config={};
 let pagoAlumnoId=null,pagoMes=null,saveTimer=null,reciboAlumnoId=null;
-let reciboNum=parseInt(localStorage.getItem('academia_movil_recibo')||'1');
+let reciboNum=parseInt(localStorage.getItem('academia_movil_recibo')||'205');
 
 function ini(n){const p=n.trim().split(' ');return(p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
 function sdotSet(cl){document.getElementById('sdot').className='dot '+cl;}
@@ -305,7 +305,7 @@ function abrirDetalle(id){
   document.getElementById('dAva').textContent=ini(a.nombre);
   document.getElementById('dNombre').textContent=a.nombre;
   document.getElementById('dMeta').textContent=(a.edad?a.edad+' anos / ':'')+(a.baja?'Baja':'Activo');
-  const tel=a.tel?`<div style="display:flex;align-items:center;gap:8px">${a.tel}<a href="https://wa.me/549${(a.tel||'').replace(/\D/g,'')}" target="_blank" style="display:inline-flex;align-items:center;background:#25D366;color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600;text-decoration:none">WA</a></div>`:'--';
+  const tel=a.tel?`<div style="display:flex;align-items:center;gap:8px">${a.tel}<a href="https://wa.me/549${(a.tel||'').replace(/\D/g,'')}" target="_blank" style="display:inline-flex;align-items:center;background:#25D366;color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600;text-decoration:none">WA</a><button onclick="editarTelefono(${id})" style="background:none;border:none;font-size:13px;cursor:pointer;padding:0;color:var(--text3)">&#9998;</button></div>`:`<div style="display:flex;align-items:center;gap:8px">--<button onclick="editarTelefono(${id})" style="background:none;border:none;font-size:13px;cursor:pointer;padding:0;color:var(--text3)">&#9998;</button></div>`;
   document.getElementById('dBody').innerHTML=`
     <div class="dgrid">
       <div class="ditem"><div class="dlbl">Tel</div><div class="dval">${tel}</div></div>
@@ -322,6 +322,14 @@ function abrirDetalle(id){
 }
 function cerrarDetalle(){document.getElementById('overlay').classList.remove('on');document.getElementById('sheet').classList.remove('on');}
 
+function editarTelefono(id){
+  const a=alumnos.find(x=>x.id===id);if(!a)return;
+  const nuevo=prompt('Teléfono:',a.tel||'');
+  if(nuevo===null)return;
+  a.tel=nuevo.trim();
+  autoSave();
+  abrirDetalle(id);
+}
 function abrirPago(id,mes){
   const a=alumnos.find(x=>x.id===id);if(!a)return;
   pagoAlumnoId=id;pagoMes=mes;
